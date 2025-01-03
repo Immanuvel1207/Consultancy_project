@@ -999,12 +999,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               child: ListView(
                 padding: EdgeInsets.all(8.0),
                 children: [
-                  _buildOperationButton('Add User'),
-                  _buildOperationButton('Delete User'),
-                  _buildOperationButton('View All Users'),
-                  _buildOperationButton('Add Payment'),
-                  _buildOperationButton('View Payments'),
-                  _buildOperationButton('View Payments by Month'),
+                  _buildOperationButton('Add\nUser'),
+                  _buildOperationButton('Delete\nUser'),
+                  _buildOperationButton('View\nAll\nUsers'),
+                  _buildOperationButton('Add\nPayment'),
+                  _buildOperationButton('View\nPayments'),
+                  _buildOperationButton('View\nPayments\nby\nMonth'),
                 ],
               ),
             ),
