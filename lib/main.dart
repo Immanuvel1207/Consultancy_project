@@ -329,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/login'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -498,7 +498,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_user'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -531,7 +531,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.delete(
-          Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/delete_user/${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -555,7 +555,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_all_users'),
+        Uri.parse('https://consultancy-project-spwz.onrender.com/find_all_users'),
       );
 
       if (response.statusCode == 200) {
@@ -578,7 +578,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_payments'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -609,7 +609,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/find_payments?userIdPayments=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -637,7 +637,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_monthController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/view_payments_by_month?p_month=${_monthController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -665,7 +665,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
+          Uri.parse('https://consultancy-project-spwz.onrender.com/find_user?userId=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -1047,7 +1047,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+        Uri.parse('https://consultancy-project-spwz.onrender.com/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1069,7 +1069,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('https://consultancy-project-spwz.onrender.com/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1091,7 +1091,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
+        Uri.parse('https://consultancy-project-spwz.onrender.com/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
