@@ -244,7 +244,7 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     // Check for admin login first
-    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIn_PASSWORD) {
+    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
       return res.json({ success: true, isAdmin: true });
     }
     
