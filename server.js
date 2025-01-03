@@ -2,14 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+require('dotenv').config();
 const app = express();
 const PORT = 4000;
 
 app.use(cors());
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb+srv://rimmanuvel12:Immanuvel%4012@cluster0.6ncy0.mongodb.net/diwali', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -244,7 +244,7 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     // Check for admin login first
-    if (username === 'UncleAdmin' && password === '9080660749') {
+    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIn_PASSWORD) {
       return res.json({ success: true, isAdmin: true });
     }
     
