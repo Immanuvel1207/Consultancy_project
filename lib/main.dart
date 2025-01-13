@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     String? username = prefs.getString('username');
     bool? isAdmin = prefs.getBool('isAdmin');
 
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin)),
@@ -91,57 +91,40 @@ class HomeScreen extends StatelessWidget {
   final String mapUrl = "https://maps.app.goo.gl/44evAN22mo1KNfTc7";
 
   final List<Map<String, dynamic>> categories = [
-  {
-    "title": "Gold",
-    "amount": "₹500 per month",
-    "color": "blue",
-    "products": [
-      {"name": "Rice", "quantity": "25 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Maida", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Oil", "quantity": "5 Liters", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Wheat Flour", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "White Dhall", "quantity": "3 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Rice Raw", "quantity": "3 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Semiya", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Payasam Mix", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Sugar", "quantity": "1 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Sesame Oil", "quantity": "150 grams", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Tamarind", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Salt", "quantity": "1/2 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Jaggery", "quantity": "1/2 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Pattasu Box", "quantity": "1 Box", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Matches Box", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Kumkum", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-      {"name": "Camphor", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"}
-    ],
-  },
-  {
-    "title": "Silver",
-    "amount": "₹300 per month",
-    "color": "yellow",
-    "products": [
-      {"name": "Rice", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Oil", "quantity": "5 Liters", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "White Dhall", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Sesame Oil", "quantity": "250 grams", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Tamarind", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Maida", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Wheat Flour", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Oil", "quantity": "1/2 Liter", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Semiya", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Matches Box", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Kumkum", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-      {"name": "Camphor", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"}
-    ],
-  }
-];
-
+    {
+      "title": "Gold",
+      "amount": "₹1200 per month",
+      "products": [
+        {"name": "Gold Product 1", "quantity": "1 kg", "image": "https://via.placeholder.com/150"},
+        {"name": "Gold Product 2", "quantity": "500 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Gold Product 3", "quantity": "250 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Gold Product 4", "quantity": "100 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Gold Product 5", "quantity": "50 g", "image": "https://via.placeholder.com/150"},
+      ],
+    },
+    {
+      "title": "Silver",
+      "amount": "₹600 per month",
+      "products": [
+        {"name": "Silver Product 1", "quantity": "1 kg", "image": "https://via.placeholder.com/150"},
+        {"name": "Silver Product 2", "quantity": "500 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Silver Product 3", "quantity": "250 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Silver Product 4", "quantity": "100 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Silver Product 5", "quantity": "50 g", "image": "https://via.placeholder.com/150"},
+      ],
+    },
+    {
+      "title": "Bronze",
+      "amount": "₹350 per month",
+      "products": [
+        {"name": "Bronze Product 1", "quantity": "1 kg", "image": "https://via.placeholder.com/150"},
+        {"name": "Bronze Product 2", "quantity": "500 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Bronze Product 3", "quantity": "250 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Bronze Product 4", "quantity": "100 g", "image": "https://via.placeholder.com/150"},
+        {"name": "Bronze Product 5", "quantity": "50 g", "image": "https://via.placeholder.com/150"},
+      ],
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/login'),
+          Uri.parse('http://localhost:4000/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -515,7 +498,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/add_user'),
+          Uri.parse('http://localhost:4000/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -548,7 +531,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.delete(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/delete_user/${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -572,7 +555,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-spwz.onrender.com/find_all_users'),
+        Uri.parse('http://localhost:4000/find_all_users'),
       );
 
       if (response.statusCode == 200) {
@@ -595,7 +578,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/add_payments'),
+          Uri.parse('http://localhost:4000/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -626,7 +609,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/find_payments?userIdPayments=${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -654,7 +637,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_monthController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/view_payments_by_month?p_month=${_monthController.text}'),
+          Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -682,7 +665,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-spwz.onrender.com/find_user?userId=${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -690,12 +673,16 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           setState(() {
             _nameController.text = userData['c_name'];
             _selectedCategory = userData['c_category'];
+            // Set the amount based on the category
             switch (_selectedCategory) {
               case 'Gold':
-                _amountController.text = '500';
+                _amountController.text = '1200';
                 break;
               case 'Silver':
-                _amountController.text = '300';
+                _amountController.text = '600';
+                break;
+              case 'Bronze':
+                _amountController.text = '350';
                 break;
               default:
                 _amountController.text = '';
@@ -860,6 +847,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
           onChanged: (value) {
             setState(() {
+              // Filter users based on search input
               _users = _users.where((user) =>
                 user['c_name'].toLowerCase().contains(value.toLowerCase()) ||
                 user['c_vill'].toLowerCase().contains(value.toLowerCase()) ||
@@ -1059,7 +1047,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-spwz.onrender.com/find_user?userId=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1081,7 +1069,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-spwz.onrender.com/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1103,7 +1091,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-spwz.onrender.com/notifications/${widget.username}'),
+        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
