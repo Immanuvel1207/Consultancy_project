@@ -91,56 +91,57 @@ class HomeScreen extends StatelessWidget {
   final String mapUrl = "https://maps.app.goo.gl/44evAN22mo1KNfTc7";
 
   final List<Map<String, dynamic>> categories = [
-    {
-      "title": "Gold",
-      "amount": "₹500 per month",
-      "color": "blue",
-      "products": [
-        {"name": "Rice", "quantity": "25 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Maida", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Oil", "quantity": "5 Liters", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Wheat Flour", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "White Dhall", "quantity": "3 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Rice Raw", "quantity": "3 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Semiya", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Payasam Mix", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Sugar", "quantity": "1 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Sesame Oil", "quantity": "150 grams", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Tamarind", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Dry Chilli", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Salt", "quantity": "1/2 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Jaggery", "quantity": "1/2 Kg", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Pattasu Box", "quantity": "1 Box", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Matches Box", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Kumkum", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"},
-        {"name": "Camphor", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/0000FF/FFFFFF"}
-      ],
-    },
-    {
-      "title": "Silver",
-      "amount": "₹300 per month",
-      "color": "yellow",
-      "products": [
-        {"name": "Rice", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Oil", "quantity": "5 Liters", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "White Dhall", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Sesame Oil", "quantity": "250 grams", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Tamarind", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Dry Chilli", "quantity": "25 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Maida", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Wheat Flour", "quantity": "5 Kg", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Oil", "quantity": "1/2 Liter", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Semiya", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Matches Box", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Kumkum", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"},
-        {"name": "Camphor", "quantity": "1 Pack", "image": "https://via.placeholder.com/150/FFD700/000000"}
-      ],
-    }
-  ];
+  {
+    "title": "Gold",
+    "amount": "₹500 per month",
+    "color": "blue",
+    "products": [
+      {"name": "Rice", "quantity": "25 Kg", "image": "assets/things/ricejpg.jpg"},
+      {"name": "Maida", "quantity": "1 Pack", "image": "assets/things/maida.jpg"},
+      {"name": "Oil", "quantity": "5 Liters", "image": "assets/things/oil.jpg"},
+      {"name": "Wheat Flour", "quantity": "1 Pack", "image": "assets/things/atta.jpg"},
+      {"name": "White Dhall", "quantity": "3 Kg", "image": "assets/things/whitedall.jpg"},
+      {"name": "Rice Raw", "quantity": "3 Kg", "image": "assets/things/riceraw.jpg"},
+      {"name": "Semiya", "quantity": "1 Pack", "image": "assets/things/semiya.jpg"},
+      {"name": "Payasam Mix", "quantity": "1 Pack", "image": "assets/things/payasam.jpg"},
+      {"name": "Sugar", "quantity": "1 Kg", "image": "assets/things/sugar.jpg"},
+      {"name": "Sesame Oil", "quantity": "150 grams", "image": "assets/things/sesame.jpg"},
+      {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
+      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
+      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
+      {"name": "Salt", "quantity": "1/2 Kg", "image": "assets/things/salt.jpg"},
+      {"name": "Jaggery", "quantity": "1/2 Kg", "image": "assets/things/jaggery.jpg"},
+      {"name": "Pattasu Box", "quantity": "1 Box", "image": "assets/things/pattasu.jpg"},
+      {"name": "Matches Box", "quantity": "1 Pack", "image": "assets/things/matchjpg.jpg"},
+      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "assets/things/tumeric.jpg"},
+      {"name": "Kumkum", "quantity": "1 Pack", "image": "assets/things/kumkumjpg.jpg"},
+      {"name": "Camphor", "quantity": "1 Pack", "image": "assets/things/camphor.jpg"}
+    ],
+  },
+  {
+    "title": "Silver",
+    "amount": "₹300 per month",
+    "color": "yellow",
+    "products": [
+      {"name": "Rice", "quantity": "5 Kg", "image": "assets/things/ricejpg.jpg"},
+      {"name": "Oil", "quantity": "5 Liters", "image": "assets/things/oil.jpg"},
+      {"name": "White Dhall", "quantity": "5 Kg", "image": "assets/things/whitedall.jpg"},
+      {"name": "Sesame Oil", "quantity": "250 grams", "image": "assets/things/sesame.jpg"},
+      {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
+      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
+      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
+      {"name": "Maida", "quantity": "5 Kg", "image": "assets/things/maida.jpg"},
+      {"name": "Wheat Flour", "quantity": "5 Kg", "image": "assets/things/atta.jpg"},
+      {"name": "Oil", "quantity": "1/2 Liter", "image": "assets/things/oil.jpg"},
+      {"name": "Semiya", "quantity": "1 Pack", "image": "assets/things/semiya.jpg"},
+      {"name": "Matches Box", "quantity": "1 Pack", "image": "assets/things/matchjpg.jpg"},
+      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "assets/things/tumeric.jpg"},
+      {"name": "Kumkum", "quantity": "1 Pack", "image": "assets/things/kumkumjpg.jpg"},
+      {"name": "Camphor", "quantity": "1 Pack", "image": "assets/things/camphor.jpg"}
+    ],
+  }
+];
+
 
   @override
   Widget build(BuildContext context) {
@@ -312,9 +313,9 @@ class CategoryDetailsPage extends StatelessWidget {
                   final product = category['products'][index];
                   return Card(
                     elevation: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: ListTile(
-                      leading: Image.network(product['image'], height: 50, fit: BoxFit.cover),
+                      leading: Image.network(product['image'], height: 1800, fit: BoxFit.cover),
                       title: Text(product['name']),
                       subtitle: Text(product['quantity']),
                     ),

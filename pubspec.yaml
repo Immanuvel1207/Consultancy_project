@@ -63,6 +63,27 @@ flutter:
     - assets/mother.jpg
     - assets/owner.jpg
     - assets/shop.jpg
+    - assets/things/atta.jpg
+    - assets/things/chilly.jpg
+    - assets/things/coriander.jpg
+    - assets/things/jaggery.jpg
+    - assets/things/kumkumjpg.jpg
+    - assets/things/maida.jpg
+    - assets/things/matchjpg.jpg
+    - assets/things/oil.jpg
+    - assets/things/pattasu.jpg
+    - assets/things/payasam.jpg
+    - assets/things/ricejpg.jpg
+    - assets/things/riceraw.jpg
+    - assets/things/salt.jpg
+    - assets/things/semiya.jpg
+    - assets/things/sesame.jpg
+    - assets/things/sugar.jpg
+    - assets/things/tamrind.jpg
+    - assets/things/tumeric.jpg
+    - assets/things/whitedall.jpg
+    - assets/things/camphor.jpg
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
