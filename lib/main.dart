@@ -1024,7 +1024,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             ),
           ),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: _buildOperationContent(),
