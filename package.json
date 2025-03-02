@@ -20,6 +20,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "firebase-admin": "^13.1.0",
     "mongoose": "^8.11.0",
     "razorpay": "^2.9.6",
     "stripe": "^17.6.0"

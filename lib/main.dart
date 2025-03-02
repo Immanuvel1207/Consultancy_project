@@ -5,7 +5,8 @@ import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -346,7 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/login'),
+          Uri.parse('https://consultancy-project-orpin.vercel.app/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -357,6 +358,9 @@ class _LoginScreenState extends State<LoginScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('username', _username);
             await prefs.setBool('isAdmin', data['isAdmin']);
+
+            // Register for push notifications
+            
 
             Navigator.pushReplacement(
               context,
@@ -380,6 +384,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -490,7 +496,6 @@ class AdminScreen extends StatelessWidget {
   }
 }
 
-
 class AdminPaymentApprovalScreen extends StatefulWidget {
   @override
   _AdminPaymentApprovalScreenState createState() => _AdminPaymentApprovalScreenState();
@@ -507,7 +512,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
   Future<void> _fetchPendingTransactions() async {
   try {
-    final url = Uri.parse('http://localhost:4000/pending_transactions');
+    final url = Uri.parse('https://consultancy-project-orpin.vercel.app/pending_transactions');
     print('Sending request to: $url'); // Log the request URL
 
     final response = await http.get(url);
@@ -536,7 +541,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _approvePayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/approve_payment'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/approve_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -561,7 +566,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _rejectPayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/reject_payment'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/reject_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -628,6 +633,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
     );
   }
 }
+
 class AdminOperationsScreen extends StatefulWidget {
   @override
   _AdminOperationsScreenState createState() => _AdminOperationsScreenState();
@@ -646,9 +652,17 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
   List<Map<String, dynamic>> _users = [];
   List<Map<String, dynamic>> _payments = [];
+  List<Map<String, dynamic>> _paidUsers = [];
+  List<Map<String, dynamic>> _unpaidUsers = [];
+  List<String> _villages = [];
+  String _selectedVillage = '';
+  List<Map<String, dynamic>> _villageUsers = [];
+  List<Map<String, dynamic>> _inactiveUsers = [];
+  
   String _selectedOperation = '';
+  Map<String, dynamic> _userToDelete = {};
 
-  List<String> categories = ['Gold', 'Silver'];
+  List<String> categories = ['Gold', 'Silver', 'Bronze'];
 
   @override
   void dispose() {
@@ -662,11 +676,90 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     super.dispose();
   }
 
+  Future<void> _fetchVillages() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/get_all_villages'),
+      );
+
+      if (response.statusCode == 200) {
+        final villages = json.decode(response.body);
+        setState(() {
+          _villages = List<String>.from(villages.map((v) => v['v_name']));
+          if (_villages.isNotEmpty && _selectedVillage.isEmpty) {
+            _selectedVillage = _villages[0];
+          }
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch villages: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _searchByVillage() async {
+    if (_selectedVillage.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a village')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/search_by_village?village=${_selectedVillage}'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _villageUsers = List<Map<String, dynamic>>.from(data['users']);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to search by village: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _fetchInactiveCustomers() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/inactive_customers'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _inactiveUsers = List<Map<String, dynamic>>.from(data['inactiveUsers']);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch inactive customers: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
   Future<void> _addUser() async {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_user'),
+          Uri.parse('https://consultancy-project-orpin.vercel.app/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -695,40 +788,112 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     }
   }
 
-  Future<void> _deleteUser() async {
-    if (_userIdController.text.isNotEmpty) {
-      try {
-        final response = await http.delete(
-          Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
-        );
+  Future<void> _fetchUserDetailsForDeletion() async {
+    if (_userIdController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a User ID to delete')),
+      );
+      return;
+    }
 
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User deleted successfully')),
-          );
-          _clearForm();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete user: ${response.body}')),
-          );
-        }
-      } catch (e) {
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${_userIdController.text}'),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _userToDelete = json.decode(response.body);
+        });
+        
+        // Show confirmation dialog
+        _showDeleteConfirmationDialog();
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
+          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Are you sure you want to delete this user?'),
+              SizedBox(height: 20),
+              Text('User Details:', style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text('ID: ${_userToDelete['_id']}'),
+              Text('Name: ${_userToDelete['c_name']}'),
+              Text('Village: ${_userToDelete['c_vill']}'),
+              Text('Category: ${_userToDelete['c_category']}'),
+              Text('Phone: ${_userToDelete['phone']}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _deleteUser(); // Proceed with deletion
+              },
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteUser() async {
+    try {
+      final response = await http.delete(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/delete_user/${_userIdController.text}'),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User deleted successfully')),
+        );
+        _clearForm();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete user: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
     }
   }
 
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_all_users'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_all_users'),
       );
 
       if (response.statusCode == 200) {
+        final data = json.decode(response.body);
         setState(() {
-          _users = List<Map<String, dynamic>>.from(json.decode(response.body));
+          _users = List<Map<String, dynamic>>.from(data['users']);
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -746,7 +911,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_payments'),
+          Uri.parse('https://consultancy-project-orpin.vercel.app/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -774,94 +939,100 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Future<void> _viewPayments() async {
-    if (_userIdController.text.isNotEmpty) {
-      try {
-        final response = await http.get(
-          Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
-        );
-
-        if (response.statusCode == 200) {
-          setState(() {
-            _payments = List<Map<String, dynamic>>.from(json.decode(response.body));
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
-      }
-    } else {
+    if (_userIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a User ID to view payments')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${_userIdController.text}'),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _payments = List<Map<String, dynamic>>.from(json.decode(response.body));
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
 
   Future<void> _viewPaymentsByMonth() async {
-    if (_monthController.text.isNotEmpty) {
-      try {
-        final response = await http.get(
-          Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
-        );
-
-        if (response.statusCode == 200) {
-          setState(() {
-            _payments = List<Map<String, dynamic>>.from(json.decode(response.body));
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
-      }
-    } else {
+    if (_monthController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a month to view payments')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/view_payments_by_month?p_month=${_monthController.text}'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _paidUsers = List<Map<String, dynamic>>.from(data['paidUsers']);
+          _unpaidUsers = List<Map<String, dynamic>>.from(data['unpaidUsers']);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
 
   Future<void> _fetchUserDetails() async {
-    if (_userIdController.text.isNotEmpty) {
-      try {
-        final response = await http.get(
-          Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
-        );
+    if (_userIdController.text.isEmpty) {
+      return;
+    }
+    
+    try {
+      final response = await http.get(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${_userIdController.text}'),
+      );
 
-        if (response.statusCode == 200) {
-          final userData = json.decode(response.body);
-          setState(() {
-            _nameController.text = userData['c_name'];
-            _selectedCategory = userData['c_category'];
-            switch (_selectedCategory) {
-              case 'Gold':
-                _amountController.text = '500';
-                break;
-              case 'Silver':
-                _amountController.text = '300';
-                break;
-              default:
-                _amountController.text = '';
-            }
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
-          );
-        }
-      } catch (e) {
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body);
+        setState(() {
+          _nameController.text = userData['c_name'];
+          _selectedCategory = userData['c_category'];
+          switch (_selectedCategory) {
+            case 'Gold':
+              _amountController.text = '500';
+              break;
+            case 'Silver':
+              _amountController.text = '300';
+              break;
+            default:
+              _amountController.text = '';
+          }
+        });
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
+          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
     }
   }
 
@@ -883,6 +1054,13 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           setState(() {
             _selectedOperation = operation;
             _clearForm();
+            
+            // Initialize data for specific operations
+            if (operation == 'Search\nBy\nVillage') {
+              _fetchVillages();
+            } else if (operation == 'Inactive\nCustomers') {
+              _fetchInactiveCustomers();
+            }
           });
         },
         child: Text(operation),
@@ -909,6 +1087,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         return _buildViewPaymentsContent();
       case 'View\nPayments\nby\nMonth':
         return _buildViewPaymentsByMonthContent();
+      case 'Search\nBy\nVillage':
+        return _buildSearchByVillageContent();
+      case 'Inactive\nCustomers':
+        return _buildInactiveCustomersContent();
       default:
         return Container();
     }
@@ -980,7 +1162,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         ),
         SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _deleteUser,
+          onPressed: _fetchUserDetailsForDeletion,
           child: Text('Delete User'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
@@ -1002,7 +1184,13 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             foregroundColor: Colors.white,
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: 10),
+        if (_users.isNotEmpty)
+          Text(
+            'Total Users: ${_users.length}',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        SizedBox(height: 10),
         TextField(
           controller: _searchController,
           decoration: InputDecoration(
@@ -1011,12 +1199,17 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
           onChanged: (value) {
             setState(() {
-              _users = _users.where((user) =>
-                user['c_name'].toLowerCase().contains(value.toLowerCase()) ||
-                user['c_vill'].toLowerCase().contains(value.toLowerCase()) ||
-                user['c_category'].toLowerCase().contains(value.toLowerCase()) ||
-                user['_id'].toString().contains(value)
-              ).toList();
+              // Filter users based on search text
+              if (value.isEmpty) {
+                _viewAllUsers(); // Refresh the list if search is cleared
+              } else {
+                _users = _users.where((user) =>
+                  user['c_name'].toString().toLowerCase().contains(value.toLowerCase()) ||
+                  user['c_vill'].toString().toLowerCase().contains(value.toLowerCase()) ||
+                  user['c_category'].toString().toLowerCase().contains(value.toLowerCase()) ||
+                  user['_id'].toString().contains(value)
+                ).toList();
+              }
             });
           },
         ),
@@ -1027,8 +1220,9 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             itemBuilder: (context, index) {
               final user = _users[index];
               return ListTile(
-                title: Text(user['c_name']),
-                subtitle: Text('ID: ${user['_id']}, Village: ${user['c_vill']}, Category: ${user['c_category']}'),
+                title: Text('${user['_id']} - ${user['c_name']}'),
+                subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
+                trailing: Text('Payments: ${user['paymentCount']}'),
               );
             },
           ),
@@ -1118,7 +1312,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
       children: [
         TextFormField(
           controller: _monthController,
-          decoration: InputDecoration(labelText: 'Month'),
+          decoration: InputDecoration(labelText: 'Month (e.g., 01 for January)'),
         ),
         SizedBox(height: 20),
         ElevatedButton(
@@ -1130,14 +1324,152 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
         ),
         SizedBox(height: 20),
+        if (_paidUsers.isNotEmpty || _unpaidUsers.isNotEmpty)
+          Expanded(
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  TabBar(
+                    tabs: [
+                      Tab(text: 'Paid (${_paidUsers.length})'),
+                      Tab(text: 'Unpaid (${_unpaidUsers.length})'),
+                    ],
+                    labelColor: Colors.deepPurple,
+                    unselectedLabelColor: Colors.grey,
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        // Paid Users Tab
+                        _buildUserList(_paidUsers, true),
+                        // Unpaid Users Tab
+                        _buildUserList(_unpaidUsers, false),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildUserList(List<Map<String, dynamic>> users, bool isPaid) {
+    return users.isEmpty
+        ? Center(child: Text('No ${isPaid ? 'paid' : 'unpaid'} users for this month'))
+        : ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isPaid ? Colors.green[100] : Colors.red[100],
+                    child: Text('${index + 1}'),
+                  ),
+                  title: Text('ID: ${user['_id']} - ${user['c_name']}'),
+                  subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
+                  trailing: isPaid
+                      ? Text('₹${user['amount']}', style: TextStyle(fontWeight: FontWeight.bold))
+                      : null,
+                ),
+              );
+            },
+          );
+  }
+
+  Widget _buildSearchByVillageContent() {
+    return Column(
+      children: [
+        DropdownButton<String>(
+          value: _selectedVillage.isNotEmpty ? _selectedVillage : null,
+          hint: Text('Select Village'),
+          isExpanded: true,
+          items: _villages.map((String village) {
+            return DropdownMenuItem<String>(
+              value: village,
+              child: Text(village),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedVillage = newValue!;
+            });
+          },
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _searchByVillage,
+          child: Text('Search'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 20),
+        if (_villageUsers.isNotEmpty)
+          Text(
+            'Customers in ${_selectedVillage}: ${_villageUsers.length}',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        SizedBox(height: 10),
         Expanded(
           child: ListView.builder(
-            itemCount: _payments.length,
+            itemCount: _villageUsers.length,
             itemBuilder: (context, index) {
-              final payment = _payments[index];
+              final user = _villageUsers[index];
               return ListTile(
-                title: Text('Amount: ${payment['amount']}'),
-                subtitle: Text('User: ${payment['c_name']}, ID: ${payment['c_id']}'),
+                title: Text('ID: ${user['_id']} - ${user['c_name']}'),
+                subtitle: Text('Category: ${user['c_category']}'),
+                trailing: Text('Payments: ${user['paymentCount']}'),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInactiveCustomersContent() {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: _fetchInactiveCustomers,
+          child: Text('Refresh Inactive Customers'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 20),
+        if (_inactiveUsers.isNotEmpty)
+          Text(
+            'Inactive Customers: ${_inactiveUsers.length}',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+          ),
+        SizedBox(height: 10),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _inactiveUsers.length,
+            itemBuilder: (context, index) {
+              final user = _inactiveUsers[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 5),
+                child: ListTile(
+                  title: Text('ID: ${user['id']} - ${user['name']}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Phone: ${user['phone']}'),
+                      Text('Village: ${user['village']}, Category: ${user['category']}'),
+                      Text('Last Payment: ${user['lastPaymentMonth']}'),
+                    ],
+                  ),
+                  trailing: Text('₹${user['lastPaymentAmount']}'),
+                ),
               );
             },
           ),
@@ -1168,6 +1500,8 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
                   _buildOperationButton('Add\nPayment'),
                   _buildOperationButton('View\nPayments'),
                   _buildOperationButton('View\nPayments\nby\nMonth'),
+                  _buildOperationButton('Search\nBy\nVillage'),
+                  _buildOperationButton('Inactive\nCustomers'),
                 ],
               ),
             ),
@@ -1184,7 +1518,6 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     );
   }
 }
-
 
 class UserScreen extends StatefulWidget {
   final String username;
@@ -1211,7 +1544,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1233,7 +1566,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1255,7 +1588,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1379,6 +1712,7 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 }
+
 class PaymentScreen extends StatefulWidget {
   final String username;
 
@@ -1403,7 +1737,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+        Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1425,7 +1759,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _checkPaymentStatus() async {
     try {
       final url = Uri.parse(
-        'http://localhost:4000/find_payments?userIdPayments=${widget.username}&p_month=$_selectedMonth',
+        'https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${widget.username}&p_month=$_selectedMonth',
       );
 
       print('Sending request to: $url'); // Log the request URL
@@ -1456,36 +1790,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _requestPayment() async {
-    if (_transactionIdController.text.isNotEmpty) {
-      try {
-        final response = await http.post(
-          Uri.parse('http://localhost:4000/request_payment'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'userId': int.parse(widget.username),
-            'month': _selectedMonth,
-            'amount': _userDetails['c_category'] == 'Gold' ? 500 : 300, // Use fetched user details
-            'transactionId': _transactionIdController.text,
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Payment request submitted successfully')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to submit payment request: ${response.body}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
-      }
-    } else {
+    if (_transactionIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a transaction ID')),
+      );
+      return;
+    }
+    
+    try {
+      final response = await http.post(
+        Uri.parse('https://consultancy-project-orpin.vercel.app/request_payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId': int.parse(widget.username),
+          'month': _selectedMonth,
+          'amount': _userDetails['c_category'] == 'Gold' ? 500 : 300, // Use fetched user details
+          'transactionId': _transactionIdController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment request submitted successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit payment request: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
@@ -1546,3 +1881,4 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 }
+
