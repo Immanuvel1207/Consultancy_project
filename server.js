@@ -3,10 +3,14 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
+
 const app = express();
 const PORT = 4000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins (for testing purposes)
+  methods: ['GET'], // Allow only GET requests
+}));
 app.use(bodyParser.json());
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -27,6 +31,8 @@ const paymentSchema = new mongoose.Schema({
   p_date: Date,
   p_month: String,
   amount: Number,
+  transactionId: String,
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
 });
 
 const villageSchema = new mongoose.Schema({
@@ -40,10 +46,19 @@ const notificationSchema = new mongoose.Schema({
   read: { type: Boolean, default: false },
 });
 
+const transactionSchema = new mongoose.Schema({
+  transactionId: String,
+  userId: Number,
+  month: String,
+  amount: Number,
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+});
+
 const User = mongoose.model('User', userSchema);
 const Payment = mongoose.model('Payment', paymentSchema);
 const Village = mongoose.model('Village', villageSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
 
 async function checkAndCreateVillage(req, res, next) {
   const { c_vill } = req.body;
@@ -74,7 +89,6 @@ app.post('/add_user', checkAndCreateVillage, async (req, res) => {
     });
     await user.save();
     
-    // Create a notification for the new user
     const notification = new Notification({
       userId: userId,
       message: `Welcome ${c_name}! Your account has been created successfully.`,
@@ -82,6 +96,16 @@ app.post('/add_user', checkAndCreateVillage, async (req, res) => {
     await notification.save();
     
     res.json({ message: 'User added successfully', data: user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.get('/pending_transactions', async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ status: 'pending' });
+    res.json(transactions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -102,7 +126,6 @@ app.post('/add_payments', async (req, res) => {
     });
     await payment.save();
     
-    // Create a notification for the payment
     const notification = new Notification({
       userId: c_id,
       message: `Your payment of ${amount} for ${p_month} has been recorded.`,
@@ -243,12 +266,10 @@ app.delete('/delete_user/:userId', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    // Check for admin login first
     if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
       return res.json({ success: true, isAdmin: true });
     }
     
-    // If not admin, check for regular user
     const user = await User.findOne({ _id: username, phone: password });
     if (user) {
       res.json({ success: true, isAdmin: false, userId: user._id });
@@ -270,7 +291,99 @@ app.get('/notifications/:userId', async (req, res) => {
   }
 });
 
+
+app.post('/request_payment', async (req, res) => {
+  const { userId, month, amount, transactionId } = req.body;
+  try {
+    const existingPayment = await Payment.findOne({ c_id: userId, p_month: month });
+    if (existingPayment) {
+      return res.status(400).json({ error: 'Payment for this month already exists' });
+    }
+
+    const existingTransaction = await Transaction.findOne({ transactionId });
+    if (existingTransaction) {
+      return res.status(400).json({ error: 'Transaction ID already exists' });
+    }
+
+    const transaction = new Transaction({
+      transactionId,
+      userId,
+      month,
+      amount,
+      status: 'pending'
+    });
+    await transaction.save();
+
+    res.json({ message: 'Payment request submitted successfully', data: transaction });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/pending_transactions', async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ status: 'pending' }).populate('userId');
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/approve_payment', async (req, res) => {
+  const { transactionId } = req.body;
+  try {
+    const transaction = await Transaction.findOne({ transactionId });
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    transaction.status = 'approved';
+    await transaction.save();
+
+    const payment = new Payment({
+      c_id: transaction.userId,
+      p_date: new Date(),
+      p_month: transaction.month,
+      amount: transaction.amount,
+      transactionId: transaction.transactionId
+    });
+    await payment.save();
+
+    const notification = new Notification({
+      userId: transaction.userId,
+      message: `Your payment of ${transaction.amount} for ${transaction.month} has been approved.`,
+    });
+    await notification.save();
+
+    res.json({ message: 'Payment approved successfully', data: payment });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/reject_payment', async (req, res) => {
+  const { transactionId } = req.body;
+  try {
+    const transaction = await Transaction.findOne({ transactionId });
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    transaction.status = 'rejected';
+    await transaction.save();
+
+    const notification = new Notification({
+      userId: transaction.userId,
+      message: `Your payment of ${transaction.amount} for ${transaction.month} has been rejected.`,
+    });
+    await notification.save();
+
+    res.json({ message: 'Payment rejected successfully', data: transaction });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
 });
-

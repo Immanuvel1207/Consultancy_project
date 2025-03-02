@@ -346,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/login'),
+          Uri.parse('http://localhost:4000/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -354,7 +354,6 @@ class _LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           if (data['success']) {
-            // Save session data
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('username', _username);
             await prefs.setBool('isAdmin', data['isAdmin']);
@@ -463,6 +462,20 @@ class AdminScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AdminPaymentApprovalScreen()),
+                );
+              },
+              child: Text('Pending Payments'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
               onPressed: () => _logout(context),
               child: Text('Logout'),
               style: ElevatedButton.styleFrom(
@@ -477,6 +490,144 @@ class AdminScreen extends StatelessWidget {
   }
 }
 
+
+class AdminPaymentApprovalScreen extends StatefulWidget {
+  @override
+  _AdminPaymentApprovalScreenState createState() => _AdminPaymentApprovalScreenState();
+}
+
+class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen> {
+  List<Map<String, dynamic>> _pendingTransactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPendingTransactions(); // Fetch pending transactions when the screen loads
+  }
+
+  Future<void> _fetchPendingTransactions() async {
+  try {
+    final url = Uri.parse('http://localhost:4000/pending_transactions');
+    print('Sending request to: $url'); // Log the request URL
+
+    final response = await http.get(url);
+
+    print('Response status code: ${response.statusCode}'); // Log the status code
+    print('Response body: ${response.body}'); // Log the response body
+
+    if (response.statusCode == 200) {
+      final transactions = json.decode(response.body);
+      print('Transactions found: ${transactions.length}'); // Log the number of transactions
+      setState(() {
+        _pendingTransactions = List<Map<String, dynamic>>.from(transactions);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch pending transactions: ${response.body}')),
+      );
+    }
+  } catch (e) {
+    print('Error: $e'); // Log the error
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('An error occurred: $e')),
+    );
+  }
+}
+  Future<void> _approvePayment(String transactionId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/approve_payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'transactionId': transactionId}),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment approved successfully')),
+        );
+        _fetchPendingTransactions(); // Refresh the list after approval
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to approve payment: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _rejectPayment(String transactionId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/reject_payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'transactionId': transactionId}),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment rejected successfully')),
+        );
+        _fetchPendingTransactions(); // Refresh the list after rejection
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reject payment: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Pending Payment Requests'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: _pendingTransactions.isEmpty
+          ? Center(child: Text('No pending payment requests.'))
+          : ListView.builder(
+              itemCount: _pendingTransactions.length,
+              itemBuilder: (context, index) {
+                final transaction = _pendingTransactions[index];
+                return Card(
+                  margin: EdgeInsets.all(8.0),
+                  child: ListTile(
+                    title: Text('User ID: ${transaction['userId']}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Month: ${transaction['month']}'),
+                        Text('Amount: ₹${transaction['amount']}'),
+                        Text('Transaction ID: ${transaction['transactionId']}'),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.check, color: Colors.green),
+                          onPressed: () => _approvePayment(transaction['transactionId']),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.red),
+                          onPressed: () => _rejectPayment(transaction['transactionId']),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
 class AdminOperationsScreen extends StatefulWidget {
   @override
   _AdminOperationsScreenState createState() => _AdminOperationsScreenState();
@@ -497,7 +648,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   List<Map<String, dynamic>> _payments = [];
   String _selectedOperation = '';
 
-  List<String> categories = ['Gold', 'Silver', 'Bronze'];
+  List<String> categories = ['Gold', 'Silver'];
 
   @override
   void dispose() {
@@ -515,7 +666,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/add_user'),
+          Uri.parse('http://localhost:4000/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -548,7 +699,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.delete(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/delete_user/${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -572,7 +723,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-orpin.vercel.app/find_all_users'),
+        Uri.parse('http://localhost:4000/find_all_users'),
       );
 
       if (response.statusCode == 200) {
@@ -595,7 +746,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/add_payments'),
+          Uri.parse('http://localhost:4000/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -626,7 +777,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -654,7 +805,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_monthController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/view_payments_by_month?p_month=${_monthController.text}'),
+          Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -682,7 +833,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_userIdController.text.isNotEmpty) {
       try {
         final response = await http.get(
-          Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${_userIdController.text}'),
+          Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
         );
 
         if (response.statusCode == 200) {
@@ -690,7 +841,6 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           setState(() {
             _nameController.text = userData['c_name'];
             _selectedCategory = userData['c_category'];
-            // Set the amount based on the category
             switch (_selectedCategory) {
               case 'Gold':
                 _amountController.text = '500';
@@ -861,7 +1011,6 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
           onChanged: (value) {
             setState(() {
-              // Filter users based on search input
               _users = _users.where((user) =>
                 user['c_name'].toLowerCase().contains(value.toLowerCase()) ||
                 user['c_vill'].toLowerCase().contains(value.toLowerCase()) ||
@@ -1036,6 +1185,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 }
 
+
 class UserScreen extends StatefulWidget {
   final String username;
 
@@ -1061,7 +1211,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-orpin.vercel.app/find_user?userId=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1083,7 +1233,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1105,7 +1255,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('https://consultancy-project-orpin.vercel.app/notifications/${widget.username}'),
+        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1146,6 +1296,15 @@ class _UserScreenState extends State<UserScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications)),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.payment), // Add a payment icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username)),
               );
             },
           ),
@@ -1220,4 +1379,170 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 }
+class PaymentScreen extends StatefulWidget {
+  final String username;
 
+  PaymentScreen({required this.username});
+
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _transactionIdController = TextEditingController();
+  bool _isPaid = false;
+  Map<String, dynamic> _userDetails = {};
+  String _selectedMonth = '01'; // Default selected month
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails(); // Fetch user details when the screen loads
+  }
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _userDetails = json.decode(response.body);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _checkPaymentStatus() async {
+    try {
+      final url = Uri.parse(
+        'http://localhost:4000/find_payments?userIdPayments=${widget.username}&p_month=$_selectedMonth',
+      );
+
+      print('Sending request to: $url'); // Log the request URL
+
+      final response = await http.get(url);
+
+      print('Response status code: ${response.statusCode}'); // Log the status code
+      print('Response body: ${response.body}'); // Log the response body
+
+      if (response.statusCode == 200) {
+        final payments = json.decode(response.body);
+        print('Payments found: ${payments.length}'); // Log the number of payments
+        setState(() {
+          // _isPaid = payments.isNotEmpty;
+          _isPaid = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to check payment status: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      print('Error: $e'); // Log the error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _requestPayment() async {
+    if (_transactionIdController.text.isNotEmpty) {
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:4000/request_payment'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'userId': int.parse(widget.username),
+            'month': _selectedMonth,
+            'amount': _userDetails['c_category'] == 'Gold' ? 500 : 300, // Use fetched user details
+            'transactionId': _transactionIdController.text,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Payment request submitted successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to submit payment request: ${response.body}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a transaction ID')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Make Payment'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            DropdownButton<String>(
+              value: _selectedMonth,
+              items: List.generate(12, (index) {
+                final month = (index + 1).toString().padLeft(2, '0'); // 01, 02, ..., 12
+                return DropdownMenuItem<String>(
+                  value: month,
+                  child: Text('Month $month'),
+                );
+              }),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedMonth = newValue!;
+                  _isPaid = false; // Reset payment status when month changes
+                });
+                _checkPaymentStatus(); // Check payment status for the selected month
+              },
+            ),
+            SizedBox(height: 20),
+            _isPaid
+              ? Text('Payment for month $_selectedMonth is already made.')
+              : Column(
+                  children: [
+                    Image.asset('assets/things/image.jpg', height: 200),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: _transactionIdController,
+                      decoration: InputDecoration(labelText: 'Transaction ID'),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _requestPayment,
+                      child: Text('Submit Payment'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
