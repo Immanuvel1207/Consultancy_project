@@ -1731,7 +1731,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails(); // Fetch user details when the screen loads
+    _fetchUserDetails();
   }
 
   Future<void> _fetchUserDetails() async {
@@ -1744,6 +1744,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         setState(() {
           _userDetails = json.decode(response.body);
         });
+        // Check payment status for the default month after fetching user details
+        _checkPaymentStatus();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
@@ -1759,22 +1761,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _checkPaymentStatus() async {
     try {
       final url = Uri.parse(
-        'https://consultancy-project-orpin.vercel.app/find_payments?userIdPayments=${widget.username}&p_month=$_selectedMonth',
+        'https://consultancy-project-orpin.vercel.app/check_payment_status?userId=${widget.username}&month=$_selectedMonth',
       );
-
-      print('Sending request to: $url'); // Log the request URL
-
+      
       final response = await http.get(url);
 
-      print('Response status code: ${response.statusCode}'); // Log the status code
-      print('Response body: ${response.body}'); // Log the response body
-
       if (response.statusCode == 200) {
-        final payments = json.decode(response.body);
-        print('Payments found: ${payments.length}'); // Log the number of payments
+        final data = json.decode(response.body);
         setState(() {
-          // _isPaid = payments.isNotEmpty;
-          _isPaid = false;
+          _isPaid = data['isPaid'];
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1782,7 +1777,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
       }
     } catch (e) {
-      print('Error: $e'); // Log the error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
@@ -1804,7 +1798,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         body: json.encode({
           'userId': int.parse(widget.username),
           'month': _selectedMonth,
-          'amount': _userDetails['c_category'] == 'Gold' ? 500 : 300, // Use fetched user details
+          'amount': _userDetails['c_category'] == 'Gold' ? 500 : 300,
           'transactionId': _transactionIdController.text,
         }),
       );
@@ -1813,9 +1807,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Payment request submitted successfully')),
         );
+        // Refresh payment status after submitting
+        _checkPaymentStatus();
       } else {
+        final errorData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit payment request: ${response.body}')),
+          SnackBar(content: Text(errorData['error'] ?? 'Failed to submit payment request')),
         );
       }
     } catch (e) {
@@ -1848,14 +1845,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedMonth = newValue!;
-                  _isPaid = false; // Reset payment status when month changes
                 });
                 _checkPaymentStatus(); // Check payment status for the selected month
               },
             ),
             SizedBox(height: 20),
             _isPaid
-              ? Text('Payment for month $_selectedMonth is already made.')
+              ? Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 48),
+                      SizedBox(height: 10),
+                      Text(
+                        'Payment for month $_selectedMonth is already made.',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
               : Column(
                   children: [
                     Image.asset('assets/things/image.jpg', height: 200),
@@ -1881,4 +1894,3 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 }
-
