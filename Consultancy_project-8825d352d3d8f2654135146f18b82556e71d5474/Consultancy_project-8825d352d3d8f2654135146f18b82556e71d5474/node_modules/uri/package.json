@@ -1,0 +1,9 @@
+{
+  "name": "uri",
+  "version": "0.1.0",
+  "directories" : {
+    "lib" : "."
+  },
+  "author": "webr3",
+  "main": "./uris.js"
+}
