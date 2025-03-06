@@ -578,7 +578,7 @@ app.post("/approve_payment", async (req, res) => {
     await payment.save()
 
     // Create in-app notification
-    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} has been approved.`
+    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} month has been approved.`
     const notification = new Notification({
       userId: transaction.userId,
       message: notificationMessage,
@@ -603,7 +603,7 @@ app.post("/reject_payment", async (req, res) => {
     await transaction.save()
 
     // Create in-app notification
-    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} has been rejected.`
+    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} month has been rejected.`
     const notification = new Notification({
       userId: transaction.userId,
       message: notificationMessage,
