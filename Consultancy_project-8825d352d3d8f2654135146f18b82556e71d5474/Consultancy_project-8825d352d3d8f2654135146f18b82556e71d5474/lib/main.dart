@@ -84,11 +84,11 @@ class HomeScreen extends StatelessWidget {
   
   HomeScreen({this.username, this.isAdmin});
 
-  final String shopName = "Sri Nanjundeshwara Stores";
+  final String shopName = "Sri SivaSakthi Stores";
   final String ownerName = "Mr. Madhu Kumar";
   final String phoneNumber = "+91 9080660749";
   final String serviceDescription = "Specialized in Diwali Chits with various categories to choose from.";
-  final String address = "Sri Nanjundeshwara Stores, Konganapalli Road, Opposite to Aishwarya Hotel, Veppanapalli 635 121";
+  final String address = "Sri SivaSakthi Stores, Konganapalli Road, Opposite to Aishwarya Hotel, Veppanapalli 635 121";
   final String mapUrl = "https://maps.app.goo.gl/44evAN22mo1KNfTc7";
 
   final List<Map<String, dynamic>> categories = [
