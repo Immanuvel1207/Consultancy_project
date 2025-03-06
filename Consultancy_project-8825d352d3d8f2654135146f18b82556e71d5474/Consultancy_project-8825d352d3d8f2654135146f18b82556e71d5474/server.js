@@ -15,16 +15,10 @@ app.use(
 )
 app.use(bodyParser.json())
 
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    bufferCommands: false, // Disable mongoose buffering
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB connection error:", err))
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
 
 const userSchema = new mongoose.Schema({
   _id: Number,
@@ -473,65 +467,67 @@ app.get("/notifications/:userId", async (req, res) => {
   }
 })
 
+
 // Add this new endpoint to check payment status
 app.get("/check_payment_status", async (req, res) => {
-  const userId = Number.parseInt(req.query.userId)
-  const month = req.query.month
-
+  const userId = Number.parseInt(req.query.userId);
+  const month = req.query.month;
+  
   try {
     // Check if there's an approved payment for this user and month
-    const approvedPayment = await Payment.findOne({
-      c_id: userId,
-      p_month: month,
-    })
-
+    const approvedPayment = await Payment.findOne({ 
+      c_id: userId, 
+      p_month: month 
+    });
+    
     // Check if there's a pending transaction for this user and month
-    const pendingTransaction = await Transaction.findOne({
-      userId: userId,
+    const pendingTransaction = await Transaction.findOne({ 
+      userId: userId, 
       month: month,
-      status: "pending",
-    })
-
+      status: "pending" 
+    });
+    
     // User has already paid if either an approved payment exists or a pending transaction exists
-    const isPaid = !!(approvedPayment || pendingTransaction)
-
-    res.json({
-      userId,
-      month,
+    const isPaid = !!(approvedPayment || pendingTransaction);
+    
+    res.json({ 
+      userId, 
+      month, 
       isPaid,
       hasApprovedPayment: !!approvedPayment,
-      hasPendingTransaction: !!pendingTransaction,
-    })
+      hasPendingTransaction: !!pendingTransaction
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message });
   }
-})
+});
+
 
 // Modify the request_payment endpoint to check for existing payments
 app.post("/request_payment", async (req, res) => {
-  const { userId, month, amount, transactionId } = req.body
+  const { userId, month, amount, transactionId } = req.body;
   try {
     // Check if payment for this month already exists
-    const existingPayment = await Payment.findOne({ c_id: userId, p_month: month })
+    const existingPayment = await Payment.findOne({ c_id: userId, p_month: month });
     if (existingPayment) {
-      return res.status(400).json({ error: "Payment for this month already exists" })
+      return res.status(400).json({ error: "Payment for this month already exists" });
     }
 
     // Check if there's a pending transaction for this month
-    const pendingTransaction = await Transaction.findOne({
-      userId: userId,
+    const pendingTransaction = await Transaction.findOne({ 
+      userId: userId, 
       month: month,
-      status: "pending",
-    })
-
+      status: "pending" 
+    });
+    
     if (pendingTransaction) {
-      return res.status(400).json({ error: "A payment request for this month is already pending approval" })
+      return res.status(400).json({ error: "A payment request for this month is already pending approval" });
     }
 
     // Check if transaction ID already exists
-    const existingTransaction = await Transaction.findOne({ transactionId })
+    const existingTransaction = await Transaction.findOne({ transactionId });
     if (existingTransaction) {
-      return res.status(400).json({ error: "Transaction ID already exists" })
+      return res.status(400).json({ error: "Transaction ID already exists" });
     }
 
     const transaction = new Transaction({
@@ -540,22 +536,23 @@ app.post("/request_payment", async (req, res) => {
       month,
       amount,
       status: "pending",
-    })
-    await transaction.save()
+    });
+    await transaction.save();
 
     // Create in-app notification
-    const notificationMessage = `Your payment request of ${amount} for ${month} has been submitted and is pending approval.`
+    const notificationMessage = `Your payment request of ${amount} for ${month} has been submitted and is pending approval.`;
     const notification = new Notification({
       userId,
       message: notificationMessage,
-    })
-    await notification.save()
+    });
+    await notification.save();
 
-    res.json({ message: "Payment request submitted successfully", data: transaction })
+    res.json({ message: "Payment request submitted successfully", data: transaction });
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message });
   }
-})
+});
+
 
 app.post("/approve_payment", async (req, res) => {
   const { transactionId } = req.body
@@ -602,6 +599,7 @@ app.post("/reject_payment", async (req, res) => {
     transaction.status = "rejected"
     await transaction.save()
 
+
     // Create in-app notification
     const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} has been rejected.`
     const notification = new Notification({
@@ -619,4 +617,3 @@ app.post("/reject_payment", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`)
 })
-
