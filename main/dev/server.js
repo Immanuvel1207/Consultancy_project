@@ -15,17 +15,7 @@ app.use(
 )
 app.use(bodyParser.json())
 
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    bufferCommands: false, // Disable mongoose buffering
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB connection error:", err))
-
+// Define schemas first
 const userSchema = new mongoose.Schema({
   _id: Number,
   c_name: String,
@@ -62,12 +52,14 @@ const transactionSchema = new mongoose.Schema({
   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
 })
 
+// Create models
 const User = mongoose.model("User", userSchema)
 const Payment = mongoose.model("Payment", paymentSchema)
 const Village = mongoose.model("Village", villageSchema)
 const Notification = mongoose.model("Notification", notificationSchema)
 const Transaction = mongoose.model("Transaction", transactionSchema)
 
+// Define all route handlers
 app.post("/register_device", async (req, res) => {
   const { userId, deviceToken } = req.body
   try {
@@ -473,7 +465,6 @@ app.get("/notifications/:userId", async (req, res) => {
   }
 })
 
-// Add this new endpoint to check payment status
 app.get("/check_payment_status", async (req, res) => {
   const userId = Number.parseInt(req.query.userId)
   const month = req.query.month
@@ -507,7 +498,6 @@ app.get("/check_payment_status", async (req, res) => {
   }
 })
 
-// Modify the request_payment endpoint to check for existing payments
 app.post("/request_payment", async (req, res) => {
   const { userId, month, amount, transactionId } = req.body
   try {
@@ -616,7 +606,28 @@ app.post("/reject_payment", async (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
-  console.log(`Server running on port http://localhost:${PORT}`)
-})
+// Connect to MongoDB and start server only after connection is established
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      bufferCommands: false, // Disable mongoose buffering
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    })
+    
+    console.log("MongoDB connected")
+    
+    // Only start the server after successful connection
+    app.listen(PORT, () => {
+      console.log(`Server running on port http://localhost:${PORT}`)
+    })
+  } catch (err) {
+    console.error("MongoDB connection error:", err)
+    process.exit(1) // Exit with failure
+  }
+}
 
+// Start the server
+startServer()
