@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
     String? username = prefs.getString('username');
     bool? isAdmin = prefs.getBool('isAdmin');
 
-    Timer(const Duration(seconds: 1), () {
+    Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin)),
