@@ -248,6 +248,7 @@ app.get("/view_payments_by_month", async (req, res) => {
           c_vill: user.c_vill,
           c_category: user.c_category,
           amount: payment ? payment.amount : 0,
+          number: user.phone,
         })
       } else {
         unpaidUsers.push({
@@ -255,6 +256,7 @@ app.get("/view_payments_by_month", async (req, res) => {
           c_name: user.c_name,
           c_vill: user.c_vill,
           c_category: user.c_category,
+          number: user.phone,
         })
       }
     }
